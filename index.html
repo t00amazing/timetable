@@ -2,9 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="시간표">
+<meta name="theme-color" content="#0d1f1a">
 <title>주간 시간표</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -161,20 +164,92 @@ body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--surface2);
 .add-row-btn:hover{background:var(--mint-soft);border-color:var(--mint);color:var(--mint-dim);}
 .editing-mode .add-row-btn{display:block;}
 
-/* ── MOBILE ── */
+/* ── MOBILE OPTIMIZATION ── */
 @media(max-width:768px){
-  .header-inner{padding:0 16px;gap:8px;}
-  .subtitle-inp,.sep{display:none;}
-  .main-wrap{padding:14px;gap:12px;}
-  .tt-scroll{padding:10px 14px;}
-  .hr-toggle,.legend-bar,.hr-body,.card-header{padding-left:14px;padding-right:14px;}
-  .person-row{flex-wrap:wrap;}
+  /* 헤더 */
+  .header-inner{padding:0 14px;height:52px;gap:8px;}
+  .subtitle-inp{display:none;}
+  .title-inp{font-size:14px;padding:2px 6px;}
+  .user-inp{width:72px;font-size:11px;}
+  .user-inp.role{display:none;}
+  .sep{display:none;}
+  .btn-header{font-size:11px;padding:6px 12px;}
+
+  /* 레이아웃 */
+  .main-wrap{padding:10px;gap:10px;}
+
+  /* 부담임 카드 */
+  .hr-toggle{padding:11px 14px;}
+  .hr-toggle-title{font-size:12px;}
+  .hr-person{font-size:11px;}
+  .legend-bar{padding:8px 14px;gap:8px;}
+  .legend-inp{width:64px;font-size:10px;}
+  .hr-body{padding:12px 14px;gap:8px;}
+  .person-row{flex-wrap:wrap;padding:8px 10px;gap:6px;}
   .pi-note{width:100%;}
+  .pi-name{width:80px;}
+  .pi-class{width:58px;}
+
+  /* 시간표 카드 */
+  .card-header{padding:11px 14px;}
+  .card-title{font-size:12px;}
+  .tt-scroll{padding:8px 10px;-webkit-overflow-scrolling:touch;}
+
+  /* 시간표 테이블 — 모바일에서 글자 더 작게 */
+  .tt-table{font-size:10px;}
+  .tt-table th{padding:6px 4px;font-size:9px;letter-spacing:0;}
+  .tt-table td{padding:5px 3px;}
+  .tt-table col.col-lbl{width:44px;}
+  .tt-table col.col-time{width:72px;}
+  .tt-table col.col-day{width:calc((100% - 116px) / 5);}
+  .row-lbl{font-size:9px;}
+  .row-time{font-size:8px;}
+  .cell-txt{font-size:9px;}
+  .cell-txt2{font-size:9px;}
+
+  /* 편집 모드 */
+  .cell-edit-wrap{min-width:52px;}
+  .cell-inp{font-size:9px;padding:2px 3px;}
+  .cell-inp2{font-size:9px;padding:2px 3px;}
+  .cat-sel{font-size:8px;}
+  .row-lbl-inp{width:44px;font-size:9px;}
+  .time-inp{width:70px;font-size:9px;}
+
+  /* 버튼 */
+  .btn-sm{font-size:11px;padding:5px 9px;}
+  .add-row-btn{font-size:11px;padding:8px;}
+
+  /* 토스트 */
+  .toast{bottom:14px;right:14px;font-size:11px;padding:9px 14px;}
 }
+
 @media(max-width:480px){
-  .user-fields,.avatar,.sep{display:none;}
-  .header-inner{height:50px;}
-  .title-inp{font-size:14px;}
+  /* 헤더 — 매우 작은 화면 */
+  .header-inner{height:48px;padding:0 12px;}
+  .user-fields,.avatar{display:none;}
+  .title-inp{font-size:13px;}
+
+  /* 레이아웃 */
+  .main-wrap{padding:8px;gap:8px;}
+
+  /* 시간표 — 가로 스크롤 허용, 최소 너비 보장 */
+  .tt-scroll{padding:6px 8px;}
+  .tt-table{min-width:360px;}
+  .tt-table col.col-lbl{width:38px;}
+  .tt-table col.col-time{width:64px;}
+  .tt-table col.col-day{width:calc((100% - 102px) / 5);}
+  .tt-table th{padding:5px 3px;font-size:8px;}
+  .tt-table td{padding:4px 2px;}
+  .cell-txt{font-size:8px;}
+  .cell-txt2{font-size:8px;}
+  .row-time{font-size:7px;}
+  .row-lbl{font-size:8px;}
+}
+
+/* iOS 홈 화면 앱 모드 */
+@media(display-mode:standalone){
+  .site-header{padding-top:env(safe-area-inset-top);}
+  .main-wrap{padding-bottom:env(safe-area-inset-bottom);}
 }
 
 /* ── TOAST ── */
