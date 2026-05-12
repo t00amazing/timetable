@@ -255,6 +255,34 @@ body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--surface2);
 /* ── TOAST ── */
 .toast{position:fixed;bottom:22px;right:22px;background:var(--dark);color:#fff;font-size:12px;font-weight:500;padding:11px 18px;border-radius:var(--radius);opacity:0;transition:all .25s;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.2);transform:translateY(6px);z-index:999;border-left:3px solid var(--mint);}
 .toast.show{opacity:1;transform:translateY(0);}
+
+/* ── 편집 모드 홀짝 행 구분 ── */
+.editing-mode .tt-row-even td{background-color:rgba(0,200,151,.06)!important;}
+.editing-mode .tt-row-odd td{background-color:rgba(255,255,255,1)!important;}
+.editing-mode .tt-row-even .row-lbl,
+.editing-mode .tt-row-even .row-time{background-color:rgba(0,200,151,.1)!important;}
+.editing-mode .tt-row-odd .row-lbl,
+.editing-mode .tt-row-odd .row-time{background-color:var(--surface2)!important;}
+
+/* ── 인쇄 스타일 ── */
+@media print{
+  @page{size:A4;margin:12mm 10mm;}
+  body{background:#fff!important;font-size:11px;}
+  .site-header,.card:first-child,.toast{display:none!important;}
+  .main-wrap{padding:0!important;gap:8px!important;}
+  .card{box-shadow:none!important;border:1px solid #ccc!important;border-radius:4px!important;}
+  .card-header{padding:8px 12px!important;}
+  .tt-scroll{padding:8px 12px!important;overflow:visible!important;}
+  .tt-table{font-size:9px!important;width:100%!important;}
+  .tt-table th{font-size:9px!important;padding:5px 4px!important;background:#f0f0f0!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .tt-table td{padding:4px 3px!important;}
+  .cell-pub,.cell-park,.cell-special,.cell-off{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cell-txt,.cell-txt2{font-size:9px!important;}
+  .add-row-btn{display:none!important;}
+  /* 인쇄 헤더 */
+  .print-header{display:block!important;}
+}
+.print-header{display:none;text-align:center;margin-bottom:8px;font-size:14px;font-weight:700;color:#000;}
 </style>
 </head>
 <body>
@@ -314,13 +342,16 @@ body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--surface2);
         🕐 주간 시간표
         <span class="week-lbl" id="weekLbl"></span>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-sm" id="printBtn">🖨️ 인쇄</button>
         <button class="btn btn-sm" id="editModeBtn">✏️ 편집</button>
+        <button class="btn btn-sm" style="color:#dc2626;border-color:rgba(220,38,38,.3);" id="resetBtn">🗑️ 초기화</button>
         <button class="btn btn-mint btn-sm" id="saveTTBtn" style="display:none;">💾 저장</button>
         <button class="btn btn-ghost btn-sm" id="cancelTTBtn" style="display:none;">취소</button>
       </div>
     </div>
     <div class="tt-scroll" id="ttScroll">
+      <div class="print-header" id="printHeaderText"></div>
       <table class="tt-table"><thead id="ttHead"></thead><tbody id="ttBody"></tbody></table>
       <button class="add-row-btn" id="addRowBtn">+ 교시 추가</button>
     </div>
@@ -518,6 +549,8 @@ function renderTT(){
   const data=editMode?ttEdit.rows:tt.rows;
   data.forEach((row,ri)=>{
     const tr=document.createElement('tr');
+    // ── 02 홀짝 행 구분 (편집 모드) ──
+    tr.className=ri%2===0?'tt-row-even':'tt-row-odd';
     // 교시 라벨
     const tdL=document.createElement('td');tdL.className='row-lbl';
     if(editMode){
@@ -606,21 +639,32 @@ function renderTT(){
             });
           }
 
-          if(row[col]){
-            const span=document.createElement('span');span.className='cell-txt';span.textContent=row[col];td.appendChild(span);
-          }
-
-          // ── 2번 수업: 구분선 + 다른 색상 배경 인라인 블록 ──
-          if(sub2){
-            const wrap2=document.createElement('div');
-            const c2cls=CAT_CLS[cat2]||'';
-            // 색상이 있으면 인라인 배경 블록, 없으면 그냥 텍스트
-            const bgMap={pub:'#c7e0ff',park:'#b2f0d8',special:'#ffe9a0',off:'#eef2f0',empty:''};
-            const bg2=bgMap[cat2]||'';
-            wrap2.style.cssText=`margin-top:3px;padding-top:3px;border-top:1px dashed hsl(240 5.9% 90%);${bg2?`background:${bg2};border-radius:3px;padding:1px 3px;margin:3px -1px 0;`:''}`;
-            const span2=document.createElement('span');span2.className='cell-txt2';span2.style.borderTop='none';span2.style.marginTop='0';span2.style.paddingTop='0';
-            span2.textContent=sub2;
-            wrap2.appendChild(span2);td.appendChild(wrap2);
+          if(row[col]||sub2){
+            // 수업이 하나만 있을 때
+            if(row[col]&&!sub2){
+              td.className=CAT_CLS[cat]||'';
+              const span=document.createElement('span');span.className='cell-txt';span.textContent=row[col];td.appendChild(span);
+            }
+            // 수업이 두 개일 때 — 셀을 위아래로 분할
+            else if(row[col]&&sub2){
+              td.style.padding='0';td.style.verticalAlign='top';
+              td.className=''; // 배경은 내부 div가 담당
+              const bgMap={pub:'#c7e0ff',park:'#b2f0d8',special:'#ffe9a0',off:'#eef2f0',empty:'#ffffff'};
+              // 위: 1번 수업
+              const top=document.createElement('div');
+              top.style.cssText=`background:${bgMap[cat]||'#fff'};padding:5px 6px;border-bottom:1.5px solid rgba(0,0,0,.08);min-height:50%;display:flex;align-items:center;justify-content:center;`;
+              const s1=document.createElement('span');s1.className='cell-txt';s1.textContent=row[col];top.appendChild(s1);
+              // 아래: 2번 수업
+              const bot=document.createElement('div');
+              bot.style.cssText=`background:${bgMap[cat2]||'#fff'};padding:5px 6px;min-height:50%;display:flex;align-items:center;justify-content:center;`;
+              const s2=document.createElement('span');s2.className='cell-txt';s2.textContent=sub2;bot.appendChild(s2);
+              td.appendChild(top);td.appendChild(bot);
+            }
+            // 2번만 있는 경우(1번 비어있음)
+            else if(!row[col]&&sub2){
+              td.className=CAT_CLS[cat2]||'';
+              const span=document.createElement('span');span.className='cell-txt';span.textContent=sub2;td.appendChild(span);
+            }
           }
         }
         tr.appendChild(td);
@@ -670,32 +714,115 @@ $('addRowBtn').addEventListener('click',()=>{
 });
 
 // 내보내기
-$('exportBtn').addEventListener('click',()=>{
+$('exportBtn').addEventListener('click', async ()=>{
   ui.appTitle=$('appTitleInp').value||'주간 시간표';
   ui.appSubtitle=$('appSubtitleInp').value||'';
   ui.name=$('userNameInp').value||'선생님';
   ui.role=$('userRoleInp').value||'담임 교사';
   sv('user_info',ui);
-  const ds=`<script>
-    try{localStorage.setItem('tt_data',${JSON.stringify(JSON.stringify(tt))});}catch(e){}
-    try{localStorage.setItem('homeroom_data',${JSON.stringify(JSON.stringify(hr))});}catch(e){}
-    try{localStorage.setItem('legend_data',${JSON.stringify(JSON.stringify(legend))});}catch(e){}
-    try{localStorage.setItem('user_info',${JSON.stringify(JSON.stringify(ui))});}catch(e){}
-  <\/script>`;
-  const clone=document.documentElement.outerHTML.replace('</body>',ds+'</body>');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([clone],{type:'text/html;charset=utf-8'}));
-  a.download=`시간표_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.html`;
-  a.click();showToast('💾 파일이 저장되었습니다');
+
+  // 저장할 데이터 JSON
+  const payload={
+    tt_data: JSON.stringify(tt),
+    homeroom_data: JSON.stringify(hr),
+    legend_data: JSON.stringify(legend),
+    user_info: JSON.stringify(ui)
+  };
+
+  try{
+    const res = await fetch(location.href);
+    if(!res.ok) throw new Error('fetch failed');
+    let html = await res.text();
+
+    // 이전에 삽입된 데이터 블록 제거 (중복 방지)
+    html = html.replace(/<!--EXPORT_DATA_START-->[\s\S]*?<!--EXPORT_DATA_END-->/g,'');
+
+    // 데이터 블록을 </body> 앞에 삽입
+    const dataBlock = [
+      '<!--EXPORT_DATA_START-->',
+      '<script id="__export_data__">',
+      '(function(){',
+      '  var d=' + JSON.stringify(payload) + ';',
+      '  for(var k in d){try{localStorage.setItem(k,d[k]);}catch(e){}}',
+      '})();',
+      '<\/script>',
+      '<!--EXPORT_DATA_END-->'
+    ].join('\n');
+
+    html = html.replace('</body>', dataBlock + '\n</body>');
+
+    const blob = new Blob([html],{type:'text/html;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `시간표_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('💾 파일이 저장되었습니다');
+  } catch(err){
+    showToast('⚠️ 내보내기 실패 — GitHub에서 열어주세요');
+    console.error(err);
+  }
 });
+
+// ── 레거시 데이터 마이그레이션: "A/B" → 1번:A, 2번:B ──
+function migrateLegacySlash(){
+  let changed=false;
+  tt.rows.forEach(r=>{
+    COLS.forEach(c=>{
+      const val=r[c]||'';
+      const sub=r['sub_'+c]||'';
+      // 이미 sub가 있으면 건너뜀
+      if(sub) return;
+      // "/" 포함 + 앞뒤 둘 다 내용 있을 때만
+      if(val.includes('/')&&val.indexOf('/')>0&&val.indexOf('/')< val.length-1){
+        const parts=val.split('/');
+        r[c]=parts[0].trim();
+        r['sub_'+c]=parts[1].trim();
+        if(!r['cat2_'+c]||r['cat2_'+c]==='empty') r['cat2_'+c]='empty';
+        changed=true;
+      }
+    });
+  });
+  if(changed){sv('tt_data',tt);}
+}
 
 // 초기화
 applyUI();
 renderHR();
 renderHRSummary();
 renderLegend();
+migrateLegacySlash();
 renderTT();
 setHR(false);
+
+// ── 01 시간표 초기화 ──
+$('resetBtn').addEventListener('click',()=>{
+  if(!confirm('시간표의 월~금 수업 내용을 모두 초기화할까요?\n교시명과 시간은 유지됩니다.')) return;
+  // ttEdit이 없으면 tt에서 복사
+  if(!ttEdit) ttEdit=JSON.parse(JSON.stringify(tt));
+  ttEdit.rows.forEach(r=>{
+    COLS.forEach(c=>{
+      r[c]='';
+      r['sub_'+c]='';
+      r['cat_'+c]='empty';
+      if(r['cat2_'+c]!==undefined) r['cat2_'+c]='empty';
+    });
+  });
+  // tt도 바로 반영 + 저장
+  tt=JSON.parse(JSON.stringify(ttEdit));
+  sv('tt_data',tt);
+  renderTT();
+  showToast('🗑️ 수업 내용이 초기화되었습니다');
+});
+
+// ── 03 인쇄 ──
+$('printBtn').addEventListener('click',()=>{
+  // 인쇄 헤더 텍스트 설정
+  const ph=document.getElementById('printHeaderText');
+  if(ph) ph.textContent=($('appTitleInp').value||'주간 시간표')+' · '+($('userNameInp').value||'')+' · '+($('weekLbl').textContent||'');
+  window.print();
+});
 </script>
 </body>
 </html>
