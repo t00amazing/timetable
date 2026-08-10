@@ -34,9 +34,9 @@
   --radius:10px;
   --radius-lg:16px;
   /* cell colors — 실제 시간표 엑셀과 동일하게: 정쌤=노랑, 박쌤=파랑 */
-  --cell-pub:#fff2a0;
-  --cell-park:#a9d8ff;
-  --cell-special:#ffe9a0;
+  --cell-pub:#fde68a;
+  --cell-park:#93c5fd;
+  --cell-special:#fdba74;
   --cell-off:#eef2f0;
   --cell-label:#fdeaf6;
 }
@@ -381,7 +381,7 @@ const DEFAULT_TT_SEM2={rows:[{"label": "등교", "time": "08:20", "mon": "", "su
 const DEFAULT_HR=[{name:'정 선생님',classRoom:'2-1',note:'야자2 월',cat:'pub'},{name:'박 선생님',classRoom:'2-6',note:'야자2 금',cat:'park'}];
 const DEFAULT_LEGEND=[{key:'pub',name:'정 선생님',cls:'ld-pub'},{key:'park',name:'박 선생님',cls:'ld-park'},{key:'special',name:'창체/특별',cls:'ld-special'},{key:'off',name:'회색',cls:'ld-off'}];
 const DEFAULT_USER={name:'선생님',role:'담임 교사',appTitle:'주간 시간표',appSubtitle:''};
-const CAT_DOT={pub:'#eab308',park:'#3b82f6',special:'#f59e0b',off:'#94a3b8',empty:'#cbd5e1'};
+const CAT_DOT={pub:'#eab308',park:'#3b82f6',special:'#f97316',off:'#94a3b8',empty:'#cbd5e1'};
 const CAT_CLS={pub:'cell-pub',park:'cell-park',special:'cell-special',off:'cell-off',empty:'cell-empty'};
 const COLS=['mon','tue','wed','thu','fri'];
 function defaultTTFor(sem){ return sem==='2학기' ? DEFAULT_TT_SEM2 : DEFAULT_TT_SEM1; }
@@ -588,7 +588,7 @@ function renderHR(){
     const catW=document.createElement('div');catW.className='person-field';
     const catL=document.createElement('div');catL.className='field-lbl';catL.textContent='구분';
     const catS=document.createElement('select');catS.className='person-inp pi-cat';
-    [{v:'pub',l:'파랑'},{v:'park',l:'초록'},{v:'special',l:'주황'},{v:'off',l:'회색'},{v:'empty',l:'없음'}].forEach(({v,l})=>{
+    [{v:'pub',l:'노랑(정)'},{v:'park',l:'파랑(박)'},{v:'special',l:'주황(특별)'},{v:'off',l:'회색(공강)'},{v:'empty',l:'색없음'}].forEach(({v,l})=>{
       const o=document.createElement('option');o.value=v;o.textContent=l;if(v===p.cat)o.selected=true;catS.appendChild(o);
     });
     catS.addEventListener('click',e=>e.stopPropagation());
@@ -607,9 +607,9 @@ function renderHR(){
 
 // ── 범례 ──
 const LEGEND_COLORS={
-  pub:  {bg:'#fff2a0',border:'#eab308'},
-  park: {bg:'#a9d8ff',border:'#3b82f6'},
-  special:{bg:'#ffe9a0',border:'#fcd34d'},
+  pub:  {bg:'#fde68a',border:'#eab308'},
+  park: {bg:'#93c5fd',border:'#3b82f6'},
+  special:{bg:'#fdba74',border:'#f97316'},
   off:  {bg:'#eef2f0',border:'#d1d5db'},
 };
 function renderLegend(){
@@ -738,7 +738,7 @@ function renderTT(){
           const cinp=document.createElement('input');cinp.className='cell-inp';cinp.value=row[col]||'';cinp.placeholder='1번 수업';
           cinp.addEventListener('input',()=>{ttEdit.rows[ri][col]=cinp.value;scheduleEditAutosave();});
           const csel=document.createElement('select');csel.className='cat-sel';
-          [{v:'pub',l:'파랑'},{v:'park',l:'초록'},{v:'special',l:'주황'},{v:'off',l:'회색'},{v:'empty',l:'색없음'}].forEach(({v,l})=>{
+          [{v:'pub',l:'노랑(정)'},{v:'park',l:'파랑(박)'},{v:'special',l:'주황(특별)'},{v:'off',l:'회색(공강)'},{v:'empty',l:'색없음'}].forEach(({v,l})=>{
             const o=document.createElement('option');o.value=v;o.textContent=l;if(v===cat)o.selected=true;csel.appendChild(o);
           });
           csel.addEventListener('change',()=>{ttEdit.rows[ri][ck]=csel.value;scheduleEditAutosave();});
@@ -750,7 +750,7 @@ function renderTT(){
           const cinp2=document.createElement('input');cinp2.className='cell-inp2';cinp2.value=sub2;cinp2.placeholder='2번 수업 (없으면 비워두기)';
           cinp2.addEventListener('input',()=>{ttEdit.rows[ri][sk]=cinp2.value;scheduleEditAutosave();});
           const csel2=document.createElement('select');csel2.className='cat-sel';
-          [{v:'pub',l:'파랑'},{v:'park',l:'초록'},{v:'special',l:'주황'},{v:'off',l:'회색'},{v:'empty',l:'색없음'}].forEach(({v,l})=>{
+          [{v:'pub',l:'노랑(정)'},{v:'park',l:'파랑(박)'},{v:'special',l:'주황(특별)'},{v:'off',l:'회색(공강)'},{v:'empty',l:'색없음'}].forEach(({v,l})=>{
             const o=document.createElement('option');o.value=v;o.textContent=l;if(v===cat2)o.selected=true;csel2.appendChild(o);
           });
           csel2.addEventListener('change',()=>{ttEdit.rows[ri][ck2]=csel2.value;scheduleEditAutosave();});
@@ -774,7 +774,7 @@ function renderTT(){
             else if(row[col]&&sub2){
               td.style.padding='0';td.style.verticalAlign='top';
               td.className=''; // 배경은 내부 div가 담당
-              const bgMap={pub:'#fff2a0',park:'#a9d8ff',special:'#ffe9a0',off:'#eef2f0',empty:'#ffffff'};
+              const bgMap={pub:'#fde68a',park:'#93c5fd',special:'#fdba74',off:'#eef2f0',empty:'#ffffff'};
               // 위: 1번 수업
               const top=document.createElement('div');
               top.style.cssText=`background:${bgMap[cat]||'#fff'};padding:5px 6px;border-bottom:1.5px solid rgba(0,0,0,.08);min-height:50%;display:flex;align-items:center;justify-content:center;`;
