@@ -370,29 +370,15 @@ body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--surface2);
 <div class="toast" id="toast"></div>
 
 <script>
-const DEFAULT_TT={rows:[
-  {label:'등교',     time:'08:20',        mon:'',            tue:'',        wed:'',          thu:'',               fri:'',              sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'empty',cat_tue:'empty',cat_wed:'empty',cat_thu:'empty',cat_fri:'empty'},
-  {label:'조회',     time:'08:20-08:30',  mon:'',            tue:'',        wed:'',          thu:'',               fri:'',              sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'empty',cat_tue:'empty',cat_wed:'empty',cat_thu:'empty',cat_fri:'empty'},
-  {label:'1교시',    time:'08:30-09:20',  mon:'자율',         tue:'',        wed:'',          thu:'',               fri:'',              sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'off',cat_tue:'empty',cat_wed:'empty',cat_thu:'empty',cat_fri:'empty'},
-  {label:'2교시',    time:'09:30-10:20',  mon:'',            tue:'',        wed:'',          thu:'',               fri:'2-6(정)',        sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'empty',cat_tue:'empty',cat_wed:'empty',cat_thu:'empty',cat_fri:'pub'},
-  {label:'3교시',    time:'10:30-11:20',  mon:'2-10(정)',     tue:'',        wed:'',          thu:'',               fri:'',              sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'pub',cat_tue:'empty',cat_wed:'empty',cat_thu:'empty',cat_fri:'empty'},
-  {label:'4교시',    time:'11:30-12:20',  mon:'',            tue:'',        wed:'',          thu:'2-4(박)',         fri:'2-2(박)',        sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'2-7(정)',sub_fri:'',cat_mon:'empty',cat_tue:'empty',cat_wed:'empty',cat_thu:'park',cat_fri:'park',cat2_mon:'empty',cat2_tue:'empty',cat2_wed:'empty',cat2_thu:'pub',cat2_fri:'empty'},
-  {label:'점심',     time:'12:20-13:30',  mon:'점심',         tue:'점심',     wed:'점심',       thu:'점심',            fri:'점심',           sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'off',cat_tue:'off',cat_wed:'off',cat_thu:'off',cat_fri:'off'},
-  {label:'5교시',    time:'13:30-14:20',  mon:'2-5(박)',      tue:'',        wed:'창체',       thu:'',               fri:'',              sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'park',cat_tue:'empty',cat_wed:'special',cat_thu:'empty',cat_fri:'empty'},
-  {label:'6교시',    time:'14:30-15:20',  mon:'공강(3)',      tue:'',        wed:'공강',       thu:'',               fri:'2-3(박)',        sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'off',cat_tue:'empty',cat_wed:'off',cat_thu:'empty',cat_fri:'park'},
-  {label:'7교시',    time:'15:30-16:20',  mon:'공강',         tue:'2-1(박)', wed:'공강',       thu:'2-8(정)',          fri:'2-9(정)',        sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'off',cat_tue:'park',cat_wed:'off',cat_thu:'pub',cat_fri:'pub'},
-  {label:'청소/종례', time:'16:20-16:50', mon:'청소',         tue:'청소',     wed:'청소',       thu:'청소',            fri:'청소',           sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'off',cat_tue:'off',cat_wed:'off',cat_thu:'off',cat_fri:'off'},
-  {label:'방과후',   time:'16:50-18:00',  mon:'',            tue:'',        wed:'',          thu:'',               fri:'',              sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'empty',cat_tue:'empty',cat_wed:'empty',cat_thu:'empty',cat_fri:'empty'},
-  {label:'저녁',     time:'18:00-19:00',  mon:'',            tue:'',        wed:'',          thu:'',               fri:'',              sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'empty',cat_tue:'empty',cat_wed:'empty',cat_thu:'empty',cat_fri:'empty'},
-  {label:'야자1',    time:'19:00-20:20',  mon:'야자',         tue:'야자',     wed:'야자',       thu:'야자',            fri:'야자',           sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'off',cat_tue:'off',cat_wed:'off',cat_thu:'off',cat_fri:'off'},
-  {label:'야자2',    time:'20:40-22:00',  mon:'2-1 부담임(박)',tue:'',       wed:'',          thu:'',               fri:'2-6 부담임(정)', sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'special',cat_tue:'empty',cat_wed:'empty',cat_thu:'empty',cat_fri:'special'},
-]};
+const DEFAULT_TT_SEM1={rows:[{"label": "등교", "time": "08:20", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "조회", "time": "08:20-08:30", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "1교시", "time": "08:30-09:20", "mon": "자율", "sub_mon": "", "cat_mon": "off", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "2교시", "time": "09:30-10:20", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "2-6(정)", "sub_fri": "", "cat_fri": "pub", "cat2_fri": "empty"}, {"label": "3교시", "time": "10:30-11:20", "mon": "2-10(정)", "sub_mon": "", "cat_mon": "pub", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "4교시", "time": "11:30-12:20", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "2-4(박)", "sub_thu": "2-7(정)", "cat_thu": "park", "cat2_thu": "pub", "fri": "2-2(박)", "sub_fri": "", "cat_fri": "park", "cat2_fri": "empty"}, {"label": "점심", "time": "12:20-13:30", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "5교시", "time": "13:30-14:20", "mon": "2-5(박)", "sub_mon": "", "cat_mon": "park", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "창체", "sub_wed": "", "cat_wed": "special", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "6교시", "time": "14:30-15:20", "mon": "공강(3)", "sub_mon": "", "cat_mon": "off", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "공강", "sub_wed": "", "cat_wed": "off", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "2-3(박)", "sub_fri": "", "cat_fri": "park", "cat2_fri": "empty"}, {"label": "7교시", "time": "15:30-16:20", "mon": "공강", "sub_mon": "", "cat_mon": "off", "cat2_mon": "empty", "tue": "2-1(박)", "sub_tue": "", "cat_tue": "park", "cat2_tue": "empty", "wed": "공강", "sub_wed": "", "cat_wed": "off", "cat2_wed": "empty", "thu": "2-8(정)", "sub_thu": "", "cat_thu": "pub", "cat2_thu": "empty", "fri": "2-9(정)", "sub_fri": "", "cat_fri": "pub", "cat2_fri": "empty"}, {"label": "청소/종례", "time": "16:20-16:50", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "방과후", "time": "16:50-18:00", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "저녁", "time": "18:00-19:00", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "야자1", "time": "19:00-20:20", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "야자2", "time": "20:40-22:00", "mon": "2-1 부담임(박)", "sub_mon": "", "cat_mon": "special", "cat2_mon": "empty", "tue": "2-6 부담임(정)", "sub_tue": "", "cat_tue": "special", "cat2_tue": "empty", "wed": "월7교시 부담임 담당", "sub_wed": "", "cat_wed": "special", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}]};
+const DEFAULT_TT_SEM2={rows:[{"label": "등교", "time": "08:20", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "조회", "time": "08:20-08:30", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "1교시", "time": "08:30-09:20", "mon": "자율", "sub_mon": "", "cat_mon": "off", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "창진(정) 2-9", "sub_thu": "", "cat_thu": "pub", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "2교시", "time": "09:30-10:20", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "창진(정) 2-7", "sub_tue": "", "cat_tue": "pub", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "창진(박) 2-2", "sub_thu": "", "cat_thu": "park", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "3교시", "time": "10:30-11:20", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "창진(박) 2-1", "sub_wed": "", "cat_wed": "park", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "창진(정) 2-10", "sub_fri": "", "cat_fri": "pub", "cat2_fri": "empty"}, {"label": "4교시", "time": "11:30-12:20", "mon": "창진(박) 2-5", "sub_mon": "", "cat_mon": "park", "cat2_mon": "empty", "tue": "창진(정) 2-8", "sub_tue": "", "cat_tue": "pub", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "점심", "time": "12:20-13:30", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "5교시", "time": "13:30-14:20", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "창진(박) 2-4", "sub_tue": "", "cat_tue": "park", "cat2_tue": "empty", "wed": "창체", "sub_wed": "", "cat_wed": "special", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "창진(정) 2-6", "sub_fri": "", "cat_fri": "pub", "cat2_fri": "empty"}, {"label": "6교시", "time": "14:30-15:20", "mon": "공강(3)", "sub_mon": "", "cat_mon": "off", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "공강", "sub_wed": "", "cat_wed": "off", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "7교시", "time": "15:30-16:20", "mon": "공강", "sub_mon": "", "cat_mon": "off", "cat2_mon": "empty", "tue": "창진(박) 2-3", "sub_tue": "", "cat_tue": "park", "cat2_tue": "empty", "wed": "공강", "sub_wed": "", "cat_wed": "off", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "청소/종례", "time": "16:20-16:50", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "방과후", "time": "16:50-18:00", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "저녁", "time": "18:00-19:00", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "야자1", "time": "19:00-20:20", "mon": "", "sub_mon": "", "cat_mon": "empty", "cat2_mon": "empty", "tue": "", "sub_tue": "", "cat_tue": "empty", "cat2_tue": "empty", "wed": "", "sub_wed": "", "cat_wed": "empty", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}, {"label": "야자2", "time": "20:40-22:00", "mon": "2-1 부담임(박)", "sub_mon": "", "cat_mon": "special", "cat2_mon": "empty", "tue": "2-6 부담임(정)", "sub_tue": "", "cat_tue": "special", "cat2_tue": "empty", "wed": "월7교시 부담임 담당", "sub_wed": "", "cat_wed": "special", "cat2_wed": "empty", "thu": "", "sub_thu": "", "cat_thu": "empty", "cat2_thu": "empty", "fri": "", "sub_fri": "", "cat_fri": "empty", "cat2_fri": "empty"}]};
 const DEFAULT_HR=[{name:'정 선생님',classRoom:'2-1',note:'야자2 월',cat:'pub'},{name:'박 선생님',classRoom:'2-6',note:'야자2 금',cat:'park'}];
 const DEFAULT_LEGEND=[{key:'pub',name:'정 선생님',cls:'ld-pub'},{key:'park',name:'박 선생님',cls:'ld-park'},{key:'special',name:'창체/특별',cls:'ld-special'},{key:'off',name:'회색',cls:'ld-off'}];
 const DEFAULT_USER={name:'선생님',role:'담임 교사',appTitle:'주간 시간표',appSubtitle:''};
 const CAT_DOT={pub:'#5b9cf6',park:'#22c55e',special:'#f59e0b',off:'#94a3b8',empty:'#cbd5e1'};
 const CAT_CLS={pub:'cell-pub',park:'cell-park',special:'cell-special',off:'cell-off',empty:'cell-empty'};
 const COLS=['mon','tue','wed','thu','fri'];
+function defaultTTFor(sem){ return sem==='2학기' ? DEFAULT_TT_SEM2 : DEFAULT_TT_SEM1; }
 
 // ══════════════════════════════════════════════
 // 구글시트 연동 설정 — 여기에 배포한 Apps Script 웹앱 URL을 붙여넣으세요
@@ -403,7 +389,7 @@ const CONFIG = {
 const CLOUD_ENABLED = CONFIG.API_URL && CONFIG.API_URL.indexOf('http') === 0;
 
 let ACTIVE_SEMESTER = '1학기';
-function ttKey(){ return 'tt_data_'+ACTIVE_SEMESTER; }
+function ttKey(){ return 'tt_data_v2_'+ACTIVE_SEMESTER; }
 
 function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):JSON.parse(JSON.stringify(d));}catch(e){return JSON.parse(JSON.stringify(d));}}
 function sv(k,v){
@@ -416,8 +402,8 @@ const syncTimers={};
 function queueSync(key){
   if(!CLOUD_ENABLED) return;
   let timerKey;
-  if(key.indexOf('tt_data_')===0){
-    const sem=key.substring('tt_data_'.length);
+  if(key.indexOf('tt_data_v2_')===0){
+    const sem=key.substring('tt_data_v2_'.length);
     timerKey='schedule:'+sem;
     clearTimeout(syncTimers[timerKey]);
     syncTimers[timerKey]=setTimeout(()=>cloudSaveSchedule(sem),1000);
@@ -444,7 +430,7 @@ async function cloudSaveSchedule(semester){
   if(!CLOUD_ENABLED) return;
   setSyncStatus('saving');
   try{
-    const rows = (semester===ACTIVE_SEMESTER) ? tt.rows : JSON.parse(localStorage.getItem('tt_data_'+semester)||'{"rows":[]}').rows;
+    const rows = (semester===ACTIVE_SEMESTER) ? tt.rows : JSON.parse(localStorage.getItem('tt_data_v2_'+semester)||'{"rows":[]}').rows;
     const res=await fetch(CONFIG.API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'save_schedule',semester:semester,rows:rows})});
     const data=await res.json();
     setSyncStatus(data.ok?'done':'error');
@@ -469,6 +455,8 @@ async function cloudSaveSettings(){
 }
 
 let semesterCache={'1학기':null,'2학기':null};
+let needsSeedSchedule={'1학기':false,'2학기':false};
+let needsSeedSettings=false;
 async function cloudLoadAll(){
   if(!CLOUD_ENABLED) return false;
   setSyncStatus('loading');
@@ -479,7 +467,9 @@ async function cloudLoadAll(){
     ['1학기','2학기'].forEach(sem=>{
       if(data[sem]&&Array.isArray(data[sem].rows)&&data[sem].rows.length){
         semesterCache[sem]=data[sem];
-        localStorage.setItem('tt_data_'+sem,JSON.stringify(data[sem]));
+        localStorage.setItem('tt_data_v2_'+sem,JSON.stringify(data[sem]));
+      }else{
+        needsSeedSchedule[sem]=true; // 시트가 비어있음 → 최초 1회 기본 데이터 업로드 예정
       }
     });
     if(data.settings){
@@ -496,6 +486,8 @@ async function cloudLoadAll(){
       if(Array.isArray(s.homeroom)&&s.homeroom.length){
         hr=s.homeroom;
         localStorage.setItem('homeroom_data',JSON.stringify(hr));
+      }else{
+        needsSeedSettings=true; // 부담임 정보가 비어있음 → 최초 1회 기본값 업로드 예정
       }
     }
     return true;
@@ -505,7 +497,7 @@ async function cloudLoadAll(){
 function loadActiveSemesterData(){
   const cloud=semesterCache[ACTIVE_SEMESTER];
   if(cloud){tt=cloud;localStorage.setItem(ttKey(),JSON.stringify(tt));}
-  else{tt=ld(ttKey(),DEFAULT_TT);}
+  else{tt=ld(ttKey(),defaultTTFor(ACTIVE_SEMESTER));}
 }
 
 function renderSemesterTabs(){
@@ -523,11 +515,15 @@ function switchSemester(name){
   loadActiveSemesterData();
   renderTT();
   renderSemesterTabs();
+  if(needsSeedSchedule[ACTIVE_SEMESTER]){
+    needsSeedSchedule[ACTIVE_SEMESTER]=false;
+    cloudSaveSchedule(ACTIVE_SEMESTER);
+  }
 }
 function $(id){return document.getElementById(id);}
 function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
-let tt=JSON.parse(JSON.stringify(DEFAULT_TT));
+let tt=JSON.parse(JSON.stringify(DEFAULT_TT_SEM1));
 let hr=ld('homeroom_data',DEFAULT_HR);
 let legend=ld('legend_data',DEFAULT_LEGEND);
 let ui=ld('user_info',DEFAULT_USER);
@@ -872,13 +868,13 @@ $('exportBtn').addEventListener('click', ()=>{
   ui.role=$('userRoleInp').value||'담임 교사';
   sv('user_info',ui);
 
-  const sem1 = (ACTIVE_SEMESTER==='1학기') ? tt : JSON.parse(localStorage.getItem('tt_data_1학기')||JSON.stringify(DEFAULT_TT));
-  const sem2 = (ACTIVE_SEMESTER==='2학기') ? tt : JSON.parse(localStorage.getItem('tt_data_2학기')||JSON.stringify(DEFAULT_TT));
+  const semBackup1 = (ACTIVE_SEMESTER==='1학기') ? tt : JSON.parse(localStorage.getItem('tt_data_v2_1학기')||JSON.stringify(DEFAULT_TT_SEM1));
+  const semBackup2 = (ACTIVE_SEMESTER==='2학기') ? tt : JSON.parse(localStorage.getItem('tt_data_v2_2학기')||JSON.stringify(DEFAULT_TT_SEM2));
 
   const backup = {
     exported_at: new Date().toISOString(),
-    '1학기': sem1,
-    '2학기': sem2,
+    '1학기': semBackup1,
+    '2학기': semBackup2,
     homeroom_data: hr,
     legend_data: legend,
     user_info: ui
@@ -932,6 +928,9 @@ async function initApp(){
   renderTT();
   setHR(false);
   renderSemesterTabs();
+  // 구글시트가 비어있었던 항목은 최초 1회 기본 데이터를 업로드해서 실제로 저장되게 함
+  if(needsSeedSchedule[ACTIVE_SEMESTER]){needsSeedSchedule[ACTIVE_SEMESTER]=false;cloudSaveSchedule(ACTIVE_SEMESTER);}
+  if(needsSeedSettings){needsSeedSettings=false;cloudSaveSettings();}
   if(!CLOUD_ENABLED) setSyncStatus('');
 }
 initApp();
