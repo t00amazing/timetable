@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="시간표">
 <meta name="theme-color" content="#0d1f1a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>주간 시간표</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -283,6 +286,7 @@ body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--surface2);
   .print-header{display:block!important;}
 }
 .print-header{display:none;text-align:center;margin-bottom:8px;font-size:14px;font-weight:700;color:#000;}
+.sem-tab-btn.active{background:var(--mint);color:var(--dark);border-color:var(--mint);font-weight:700;}
 </style>
 </head>
 <body>
@@ -305,6 +309,7 @@ body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--surface2);
         </div>
       </div>
       <div class="sep"></div>
+      <span id="syncStatus" style="font-size:11px;color:rgba(255,255,255,.8);white-space:nowrap;"></span>
       <button class="btn-header" id="exportBtn">💾 내보내기</button>
     </div>
   </div>
@@ -350,6 +355,10 @@ body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--surface2);
         <button class="btn btn-ghost btn-sm" id="cancelTTBtn" style="display:none;">취소</button>
       </div>
     </div>
+    <div style="padding:12px 20px 0;display:flex;gap:6px;">
+      <button class="btn btn-sm sem-tab-btn" id="semTab1" data-sem="1학기">1학기</button>
+      <button class="btn btn-sm sem-tab-btn" id="semTab2" data-sem="2학기">2학기</button>
+    </div>
     <div class="tt-scroll" id="ttScroll">
       <div class="print-header" id="printHeaderText"></div>
       <table class="tt-table"><thead id="ttHead"></thead><tbody id="ttBody"></tbody></table>
@@ -385,12 +394,140 @@ const CAT_DOT={pub:'#5b9cf6',park:'#22c55e',special:'#f59e0b',off:'#94a3b8',empt
 const CAT_CLS={pub:'cell-pub',park:'cell-park',special:'cell-special',off:'cell-off',empty:'cell-empty'};
 const COLS=['mon','tue','wed','thu','fri'];
 
+// ══════════════════════════════════════════════
+// 구글시트 연동 설정 — 여기에 배포한 Apps Script 웹앱 URL을 붙여넣으세요
+// ══════════════════════════════════════════════
+const CONFIG = {
+  API_URL: 'https://script.google.com/macros/s/AKfycbytThg8KqYa0bbQYHNmM3jfxfhJfMb1X0rYFWG7Eem2OLudVvCtB8E9PNWhPOfJjtk/exec'
+};
+const CLOUD_ENABLED = CONFIG.API_URL && CONFIG.API_URL.indexOf('http') === 0;
+
+let ACTIVE_SEMESTER = '1학기';
+function ttKey(){ return 'tt_data_'+ACTIVE_SEMESTER; }
+
 function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):JSON.parse(JSON.stringify(d));}catch(e){return JSON.parse(JSON.stringify(d));}}
-function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function sv(k,v){
+  try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}
+  queueSync(k);
+}
+
+// ── 자동저장(디바운스 1초) ──
+const syncTimers={};
+function queueSync(key){
+  if(!CLOUD_ENABLED) return;
+  let timerKey;
+  if(key.indexOf('tt_data_')===0){
+    const sem=key.substring('tt_data_'.length);
+    timerKey='schedule:'+sem;
+    clearTimeout(syncTimers[timerKey]);
+    syncTimers[timerKey]=setTimeout(()=>cloudSaveSchedule(sem),1000);
+  }else if(key==='homeroom_data'||key==='legend_data'||key==='user_info'){
+    timerKey='settings';
+    clearTimeout(syncTimers[timerKey]);
+    syncTimers[timerKey]=setTimeout(()=>cloudSaveSettings(),1000);
+  }
+}
+
+function setSyncStatus(state){
+  const el=document.getElementById('syncStatus');if(!el)return;
+  clearTimeout(setSyncStatus._t);
+  if(state==='saving'){el.textContent='⏳ 저장 중...';}
+  else if(state==='done'){
+    el.textContent='✅ 저장됨';
+    setSyncStatus._t=setTimeout(()=>{if(el.textContent==='✅ 저장됨')el.textContent='';},2500);
+  }else if(state==='error'){el.textContent='⚠️ 저장 실패 (연결 확인)';}
+  else if(state==='loading'){el.textContent='🔄 불러오는 중...';}
+  else{el.textContent='';}
+}
+
+async function cloudSaveSchedule(semester){
+  if(!CLOUD_ENABLED) return;
+  setSyncStatus('saving');
+  try{
+    const rows = (semester===ACTIVE_SEMESTER) ? tt.rows : JSON.parse(localStorage.getItem('tt_data_'+semester)||'{"rows":[]}').rows;
+    const res=await fetch(CONFIG.API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'save_schedule',semester:semester,rows:rows})});
+    const data=await res.json();
+    setSyncStatus(data.ok?'done':'error');
+  }catch(err){console.error(err);setSyncStatus('error');}
+}
+
+function legendNameOf(key){const it=(legend||[]).find(l=>l.key===key);return it?it.name:'';}
+
+async function cloudSaveSettings(){
+  if(!CLOUD_ENABLED) return;
+  setSyncStatus('saving');
+  try{
+    const payload={
+      appTitle:ui.appTitle,appSubtitle:ui.appSubtitle,userName:ui.name,userRole:ui.role,
+      legend:{pub:legendNameOf('pub'),park:legendNameOf('park'),special:legendNameOf('special'),off:legendNameOf('off')},
+      homeroom:hr
+    };
+    const res=await fetch(CONFIG.API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'save_settings',settings:payload})});
+    const data=await res.json();
+    setSyncStatus(data.ok?'done':'error');
+  }catch(err){console.error(err);setSyncStatus('error');}
+}
+
+let semesterCache={'1학기':null,'2학기':null};
+async function cloudLoadAll(){
+  if(!CLOUD_ENABLED) return false;
+  setSyncStatus('loading');
+  try{
+    const res=await fetch(CONFIG.API_URL,{method:'GET'});
+    const data=await res.json();
+    if(!data.ok) return false;
+    ['1학기','2학기'].forEach(sem=>{
+      if(data[sem]&&Array.isArray(data[sem].rows)&&data[sem].rows.length){
+        semesterCache[sem]=data[sem];
+        localStorage.setItem('tt_data_'+sem,JSON.stringify(data[sem]));
+      }
+    });
+    if(data.settings){
+      const s=data.settings;
+      if(s.appTitle)ui.appTitle=s.appTitle;
+      ui.appSubtitle=s.appSubtitle||ui.appSubtitle;
+      if(s.userName)ui.name=s.userName;
+      if(s.userRole)ui.role=s.userRole;
+      localStorage.setItem('user_info',JSON.stringify(ui));
+      if(s.legend){
+        legend.forEach(l=>{if(s.legend[l.key])l.name=s.legend[l.key];});
+        localStorage.setItem('legend_data',JSON.stringify(legend));
+      }
+      if(Array.isArray(s.homeroom)&&s.homeroom.length){
+        hr=s.homeroom;
+        localStorage.setItem('homeroom_data',JSON.stringify(hr));
+      }
+    }
+    return true;
+  }catch(err){console.error(err);return false;}
+}
+
+function loadActiveSemesterData(){
+  const cloud=semesterCache[ACTIVE_SEMESTER];
+  if(cloud){tt=cloud;localStorage.setItem(ttKey(),JSON.stringify(tt));}
+  else{tt=ld(ttKey(),DEFAULT_TT);}
+}
+
+function renderSemesterTabs(){
+  ['1학기','2학기'].forEach((sem,i)=>{
+    const btn=document.getElementById('semTab'+(i+1));
+    if(btn)btn.classList.toggle('active',sem===ACTIVE_SEMESTER);
+  });
+}
+
+function switchSemester(name){
+  if(name===ACTIVE_SEMESTER)return;
+  if(editMode){showToast('⚠️ 편집 중에는 학기를 전환할 수 없어요');return;}
+  ACTIVE_SEMESTER=name;
+  localStorage.setItem('active_semester',name);
+  loadActiveSemesterData();
+  renderTT();
+  renderSemesterTabs();
+}
 function $(id){return document.getElementById(id);}
 function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
 
-let tt=ld('tt_data',DEFAULT_TT);
+let tt=JSON.parse(JSON.stringify(DEFAULT_TT));
 let hr=ld('homeroom_data',DEFAULT_HR);
 let legend=ld('legend_data',DEFAULT_LEGEND);
 let ui=ld('user_info',DEFAULT_USER);
@@ -555,9 +692,9 @@ function renderTT(){
     const tdL=document.createElement('td');tdL.className='row-lbl';
     if(editMode){
       const inp=document.createElement('input');inp.className='row-lbl-inp';inp.value=row.label;
-      inp.addEventListener('input',()=>{ttEdit.rows[ri].label=inp.value;});
+      inp.addEventListener('input',()=>{ttEdit.rows[ri].label=inp.value;scheduleEditAutosave();});
       const del=document.createElement('button');del.className='del-row-btn';del.textContent='✕';
-      del.addEventListener('click',()=>{ttEdit.rows.splice(ri,1);renderTT();});
+      del.addEventListener('click',()=>{ttEdit.rows.splice(ri,1);renderTT();scheduleEditAutosave();});
       const w=document.createElement('div');w.style='display:flex;align-items:center;gap:2px;';
       w.appendChild(inp);w.appendChild(del);tdL.appendChild(w);
     }else{tdL.textContent=row.label;}
@@ -566,7 +703,7 @@ function renderTT(){
     const tdT=document.createElement('td');tdT.className='row-time';
     if(editMode){
       const inp=document.createElement('input');inp.className='time-inp';inp.value=row.time;
-      inp.addEventListener('input',()=>{ttEdit.rows[ri].time=inp.value;});
+      inp.addEventListener('input',()=>{ttEdit.rows[ri].time=inp.value;scheduleEditAutosave();});
       tdT.appendChild(inp);
     }else{tdT.textContent=row.time;}
     tr.appendChild(tdT);
@@ -596,24 +733,24 @@ function renderTT(){
 
           // ── 1번 수업 ──
           const cinp=document.createElement('input');cinp.className='cell-inp';cinp.value=row[col]||'';cinp.placeholder='1번 수업';
-          cinp.addEventListener('input',()=>{ttEdit.rows[ri][col]=cinp.value;});
+          cinp.addEventListener('input',()=>{ttEdit.rows[ri][col]=cinp.value;scheduleEditAutosave();});
           const csel=document.createElement('select');csel.className='cat-sel';
           [{v:'pub',l:'파랑'},{v:'park',l:'초록'},{v:'special',l:'주황'},{v:'off',l:'회색'},{v:'empty',l:'색없음'}].forEach(({v,l})=>{
             const o=document.createElement('option');o.value=v;o.textContent=l;if(v===cat)o.selected=true;csel.appendChild(o);
           });
-          csel.addEventListener('change',()=>{ttEdit.rows[ri][ck]=csel.value;});
+          csel.addEventListener('change',()=>{ttEdit.rows[ri][ck]=csel.value;scheduleEditAutosave();});
 
           // ── 구분선 ──
           const divider=document.createElement('div');divider.className='cell-edit-divider';divider.textContent='+ 2번 수업';
 
           // ── 2번 수업 ──
           const cinp2=document.createElement('input');cinp2.className='cell-inp2';cinp2.value=sub2;cinp2.placeholder='2번 수업 (없으면 비워두기)';
-          cinp2.addEventListener('input',()=>{ttEdit.rows[ri][sk]=cinp2.value;});
+          cinp2.addEventListener('input',()=>{ttEdit.rows[ri][sk]=cinp2.value;scheduleEditAutosave();});
           const csel2=document.createElement('select');csel2.className='cat-sel';
           [{v:'pub',l:'파랑'},{v:'park',l:'초록'},{v:'special',l:'주황'},{v:'off',l:'회색'},{v:'empty',l:'색없음'}].forEach(({v,l})=>{
             const o=document.createElement('option');o.value=v;o.textContent=l;if(v===cat2)o.selected=true;csel2.appendChild(o);
           });
-          csel2.addEventListener('change',()=>{ttEdit.rows[ri][ck2]=csel2.value;});
+          csel2.addEventListener('change',()=>{ttEdit.rows[ri][ck2]=csel2.value;scheduleEditAutosave();});
 
           wrap.appendChild(cinp);wrap.appendChild(csel);wrap.appendChild(divider);wrap.appendChild(cinp2);wrap.appendChild(csel2);
           td.appendChild(wrap);
@@ -682,6 +819,17 @@ function renderTT(){
   }
 }
 
+// ── 편집 중 타이핑 멈추면 1초 후 자동저장(포커스 유지, 화면 재렌더 안 함) ──
+let editAutosaveTimer=null;
+function scheduleEditAutosave(){
+  clearTimeout(editAutosaveTimer);
+  editAutosaveTimer=setTimeout(()=>{
+    if(!editMode||!ttEdit)return;
+    tt=JSON.parse(JSON.stringify(ttEdit));
+    sv(ttKey(),tt);
+  },1000);
+}
+
 $('editModeBtn').addEventListener('click',()=>{
   editMode=true;ttEdit=JSON.parse(JSON.stringify(tt));
   ttEdit.rows.forEach(r=>{COLS.forEach(c=>{
@@ -694,7 +842,8 @@ $('editModeBtn').addEventListener('click',()=>{
   renderTT();
 });
 $('saveTTBtn').addEventListener('click',()=>{
-  tt=JSON.parse(JSON.stringify(ttEdit));sv('tt_data',tt);
+  clearTimeout(editAutosaveTimer);
+  tt=JSON.parse(JSON.stringify(ttEdit));sv(ttKey(),tt);
   editMode=false;ttEdit=null;
   $('editModeBtn').style.display='inline-flex';
   $('saveTTBtn').style.display='none';
@@ -702,6 +851,7 @@ $('saveTTBtn').addEventListener('click',()=>{
   renderTT();showToast('✅ 시간표가 저장되었습니다');
 });
 $('cancelTTBtn').addEventListener('click',()=>{
+  clearTimeout(editAutosaveTimer);
   editMode=false;ttEdit=null;
   $('editModeBtn').style.display='inline-flex';
   $('saveTTBtn').style.display='none';
@@ -711,58 +861,37 @@ $('cancelTTBtn').addEventListener('click',()=>{
 $('addRowBtn').addEventListener('click',()=>{
   ttEdit.rows.push({label:'새 교시',time:'00:00-00:00',mon:'',tue:'',wed:'',thu:'',fri:'',sub_mon:'',sub_tue:'',sub_wed:'',sub_thu:'',sub_fri:'',cat_mon:'empty',cat_tue:'empty',cat_wed:'empty',cat_thu:'empty',cat_fri:'empty',cat2_mon:'empty',cat2_tue:'empty',cat2_wed:'empty',cat2_thu:'empty',cat2_fri:'empty'});
   renderTT();
+  scheduleEditAutosave();
 });
 
-// 내보내기
-$('exportBtn').addEventListener('click', async ()=>{
+// 내보내기 (JSON 백업 다운로드 — 구글시트 연결이 끊겼을 때 대비용)
+$('exportBtn').addEventListener('click', ()=>{
   ui.appTitle=$('appTitleInp').value||'주간 시간표';
   ui.appSubtitle=$('appSubtitleInp').value||'';
   ui.name=$('userNameInp').value||'선생님';
   ui.role=$('userRoleInp').value||'담임 교사';
   sv('user_info',ui);
 
-  // 저장할 데이터 JSON
-  const payload={
-    tt_data: JSON.stringify(tt),
-    homeroom_data: JSON.stringify(hr),
-    legend_data: JSON.stringify(legend),
-    user_info: JSON.stringify(ui)
+  const sem1 = (ACTIVE_SEMESTER==='1학기') ? tt : JSON.parse(localStorage.getItem('tt_data_1학기')||JSON.stringify(DEFAULT_TT));
+  const sem2 = (ACTIVE_SEMESTER==='2학기') ? tt : JSON.parse(localStorage.getItem('tt_data_2학기')||JSON.stringify(DEFAULT_TT));
+
+  const backup = {
+    exported_at: new Date().toISOString(),
+    '1학기': sem1,
+    '2학기': sem2,
+    homeroom_data: hr,
+    legend_data: legend,
+    user_info: ui
   };
 
-  try{
-    const res = await fetch(location.href);
-    if(!res.ok) throw new Error('fetch failed');
-    let html = await res.text();
-
-    // 이전에 삽입된 데이터 블록 제거 (중복 방지)
-    html = html.replace(/<!--EXPORT_DATA_START-->[\s\S]*?<!--EXPORT_DATA_END-->/g,'');
-
-    // 데이터 블록을 </body> 앞에 삽입
-    const dataBlock = [
-      '<!--EXPORT_DATA_START-->',
-      '<script id="__export_data__">',
-      '(function(){',
-      '  var d=' + JSON.stringify(payload) + ';',
-      '  for(var k in d){try{localStorage.setItem(k,d[k]);}catch(e){}}',
-      '})();',
-      '<\/script>',
-      '<!--EXPORT_DATA_END-->'
-    ].join('\n');
-
-    html = html.replace('</body>', dataBlock + '\n</body>');
-
-    const blob = new Blob([html],{type:'text/html;charset=utf-8'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `시간표_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    showToast('💾 파일이 저장되었습니다');
-  } catch(err){
-    showToast('⚠️ 내보내기 실패 — GitHub에서 열어주세요');
-    console.error(err);
-  }
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type:'application/json;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `시간표_백업_${today.getFullYear()}${String(today.getMonth()+1).padStart(2,'0')}${String(today.getDate()).padStart(2,'0')}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('💾 백업 파일이 저장되었습니다');
 });
 
 // ── 레거시 데이터 마이그레이션: "A/B" → 1번:A, 2번:B ──
@@ -784,17 +913,32 @@ function migrateLegacySlash(){
       }
     });
   });
-  if(changed){sv('tt_data',tt);}
+  if(changed){sv(ttKey(),tt);}
 }
 
 // 초기화
-applyUI();
-renderHR();
-renderHRSummary();
-renderLegend();
-migrateLegacySlash();
-renderTT();
-setHR(false);
+document.getElementById('semTab1').addEventListener('click',()=>switchSemester('1학기'));
+document.getElementById('semTab2').addEventListener('click',()=>switchSemester('2학기'));
+
+async function initApp(){
+  ACTIVE_SEMESTER=localStorage.getItem('active_semester')||'1학기';
+  await cloudLoadAll();
+  loadActiveSemesterData();
+  applyUI();
+  renderHR();
+  renderHRSummary();
+  renderLegend();
+  migrateLegacySlash();
+  renderTT();
+  setHR(false);
+  renderSemesterTabs();
+  if(!CLOUD_ENABLED) setSyncStatus('');
+}
+initApp();
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
 
 // ── 01 시간표 초기화 ──
 $('resetBtn').addEventListener('click',()=>{
@@ -811,7 +955,7 @@ $('resetBtn').addEventListener('click',()=>{
   });
   // tt도 바로 반영 + 저장
   tt=JSON.parse(JSON.stringify(ttEdit));
-  sv('tt_data',tt);
+  sv(ttKey(),tt);
   renderTT();
   showToast('🗑️ 수업 내용이 초기화되었습니다');
 });
